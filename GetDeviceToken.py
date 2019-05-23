@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2019, NTT DOCOMO, INC.
@@ -28,111 +27,117 @@
 
 import sys
 import json
-import urllib2
+import platform
+gmajor, gminor, grevision = platform.python_version_tuple()
+if gmajor == '2':
+    import urllib2
+else:
+    import urllib.request
 import os
 import subprocess
 
-TARGET = "trial"
+TARGET = "prod"
 CONFIG = {
-    "trial":{
-        "client_secret":"56f54e1d-a615-495f-8c3c-0aabf5f77760",
-        "mds":"https://mds-v2.sebastien.ai",
-        "uds":"https://users-v2.sebastien.ai"
+    "prod":{
+        "client_secret":"XXXXXXXXXXXXXXXXXXXX",
+        "devices":"https://doubk.aiplat.jp/v1.0/dvo/doubk/devices",
+        "regist":"https://doufr.aiplat.jp/device/regist?directAccess=true&deviceId=",
+        "token":"https://doubk.aiplat.jp/v1.0/dvo/doubk/devices/token",
+        "refresh":"https://doubk.aiplat.jp/v1.0/dvo/doubk/devices/token/refresh"
     }
 }
 
-def get_response(url):
-    response = urllib2.urlopen(url)
-    html = response.read()
-    print(html)
-    return html
+def post(config_key, param):
+    url = CONFIG[TARGET][config_key]
+    json_data = json.dumps(param).encode("utf-8")
+    headers = {"Content-Type" : "application/json"}
+    if gmajor == '2':
+        request = urllib2.Request(url, data=json_data, headers=headers)
+        response = urllib2.urlopen(request).read()
+    else:
+        request = urllib.request.Request(url, data=json_data, headers=headers)
+        response = urllib.request.urlopen(request).read().decode()
+    return json.loads(response)
 
 
-def fileoutput(filename, output):
-    f = open("./." + TARGET + "_" + filename, "wb")
-    f.write(output)
-    f.close()
-    print("SAVE " + filename + " : " + output)
-
-
-def fileexist(filename):
+def exists(filename):
     return os.path.exists("./." + TARGET + "_" + filename)
 
+def write(filename, value):
+    filename = "./." + TARGET + "_" + filename
+    f = open(filename.encode(), "wb")
+    f.write(value.encode())
 
-def fileread(filename):
+def read(filename):
     f = open("./." + TARGET + "_" + filename, "r")
-    output = f.read()
-    print("READ " + filename + " : " + output)
+    value = f.read()
     f.close()
-    return output
+    return value
 
+def validate(token):
+    if "device_token" in token and "device_refresh_token" in token:
+        return token["device_token"] != "None"
+    return False
 
 if __name__ == '__main__':
     args = sys.argv
     if 1 < len(args):
-        TARGET = args[1]
-    if TARGET in CONFIG:
-        client_secret = CONFIG[TARGET]["client_secret"]
-        mds = CONFIG[TARGET]["mds"]
-        uds = CONFIG[TARGET]["uds"]
-    else:
-        print(TARGET + " is illegal argument.")
-        exit()
-    if not fileexist("device_id"):
-        device_id_json = get_response(mds + "/api/issue_device_id?client_secret=" + client_secret)
-        device_id = json.loads(device_id_json)["device_id"]
-        fileoutput("device_id", device_id)
-        if device_id == "" or device_id is None:
-            print("Failed to get Device_ID.. please try again.")
-            exit()
+        if args[1] in CONFIG:
+            TARGET = args[1]
         else:
-            print("Success to get Device ID :" + device_id)
-            print("Please register above ID as your device on User Dashboard. " + uds)
+            print("Please specify one of the following values as argument.")
+            print("以下のいずれかの値を引数に指定して下さい。")
+            for key in CONFIG:
+                print(" " + key)
+            exit()
+
+    if not exists("device_id"):
+        devices = post("devices",{"client_secret_device":CONFIG[TARGET]["client_secret"]})
+        if "device_id" in devices:
+            device_id = devices["device_id"]
+            write("device_id", device_id)
+            print("Success to get DeviceID :" + device_id)
             print("デバイスIDの取得に成功しました。")
+            print("Please register DeviceID as your device on User Dashboard.")
             print("下記リンク（↓）を使ってブラウザ等でデバイスIDを自分のアカウントに登録して下さい。")
-            print(uds + "/dashboard/device_registration?confirm=yes&device_id=" + device_id)
+            print(CONFIG[TARGET]["regist"] + device_id)
             print("")
-            i = raw_input('Press any key AFTER registration >>> ')
-
-    else:
-        device_id = fileread("device_id")
-
-    if not fileexist("device_token"):
-        device_token_json = get_response(uds + "/api/req_device_token?device_id=" + device_id)
-        device_token = json.loads(device_token_json)["device_token"]
-        if device_token == "" or device_token is None:
-            print("Failed to get Device Token. Check User Dashboard to make sure the Device ID is registered properly.")
-            print("If the Device ID has been registered, please remove and register the Device ID again on User Dashboard.")
-            print("Device Tokenの取得に失敗しました。Device IDがUser Dashboardで正しく登録されているのか確認して下さい。")
-            print("もし登録されている場合は、一度登録済みIDを削除してから再度登録して下さい。")
-            print("Device ID: " + device_id)
-            exit()
-        else:
-            fileoutput("device_token", device_token)
-            refresh_token = json.loads(device_token_json)["refresh_token"]
-            fileoutput("refresh_token", refresh_token)
-    else:
-        device_token = fileread("device_token")
-        refresh_token = fileread("refresh_token")
-
-        # DeviceToken validation
-        validate_result = get_response(uds + "/api/validate_device_token?device_token=" + device_token)
-        status = json.loads(validate_result)["status"]
-        if status != "valid":
-            # Update DeviceToken by RefreshToken
-            device_token_json = get_response(uds + "/api/update_device_token?refresh_token=" + refresh_token)
-            device_token = json.loads(device_token_json)["device_token"]
-            if device_token == "" or device_token is None:
-                os.remove("./." + TARGET + "_device_id")
-                os.remove("./." + TARGET + "_device_token")
-                os.remove("./." + TARGET + "_refresh_token")
-                print("Failed to update Device Token by Refresh Token. Check User Dashboard to make sure the Device ID is registered properly.")
-                print("If the Device ID has been registered, please remove and register the Device ID again on User Dashboard.")
-                print("Device Tokenの更新に失敗しました。Device IDがUser Dashboardで正しく登録されているのか確認して下さい。")
-                print("もし登録されている場合は、一度登録済みIDを削除してから再度登録して下さい。")
-                print("Device ID: " + device_id)
+            if gmajor == '2':
+                i = raw_input('Press any key AFTER registration >>> ')
             else:
-                fileoutput("device_token", device_token)
-                refresh_token = json.loads(device_token_json)["refresh_token"]
-                fileoutput("refresh_token", refresh_token)
+                i = input('Press any key AFTER registration >>> ')
+        else:
+            print("Failed to get DeviceID.. please try again.")
+            exit()
 
+    else:
+        device_id = read("device_id")
+
+
+    if not exists("device_token"):
+        verb_en = "get"
+        verb_ja = "取得"
+        token = post("token",{"device_id":device_id})
+    else:
+        verb_en = "update"
+        verb_ja = "更新"
+        token = post("refresh",{"device_refresh_token":read("refresh_token")})
+
+    if validate(token):
+        device_token = token["device_token"]
+        refresh_token = token["device_refresh_token"]
+        write("device_token", device_token)
+        write("refresh_token", refresh_token)
+        print("Success to {0} DeviceToken : {1}".format(verb_en,device_token))
+        print("デバイストークンの{}に成功しました。".format(verb_ja))
+        print("Success to {0} RefreshToken : {1}".format(verb_en,refresh_token))
+        print("リフレッシュトークンの{}に成功しました。".format(verb_ja))
+    else:
+        os.remove("./." + TARGET + "_device_id")
+        os.remove("./." + TARGET + "_device_token")
+        os.remove("./." + TARGET + "_refresh_token")
+        print("Failed to {} DeviceToken. Check User Dashboard to make sure the Device ID is registered properly.".format(verb_en))
+        print("If the DeviceID has been registered, please remove and register the Device ID again on User Dashboard.")
+        print("DeviceTokenの{}に失敗しました。DeviceIDがUser Dashboardで正しく登録されているのか確認して下さい。".format(verb_ja))
+        print("もし登録されている場合は、一度登録済みIDを削除してから再度登録して下さい。")
+        print("DeviceID: " + device_id)

@@ -98,7 +98,7 @@ def stop():
 # SDK初期化
 sdk = Speak()
 sdk.init()
-sdk.set_url("wss://spf-v2.sebastien.ai/talk")
+sdk.set_url("wss://dospf.aiplat.jp/ciel")
 sdk.set_device_token("PUT_YOUR_DEVICE_TOKEN")
 sdk.set_on_play_end(on_play_end)
 sdk.set_on_meta_out(on_meta_out)
