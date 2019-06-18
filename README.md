@@ -1,6 +1,6 @@
 # SpeakSDK for Python サンプルアプリケーション
 本ソースコードは株式会社NTTドコモが提供するドコモAIエージェントAPI [SpeakSDK](https://github.com/docomoDeveloperSupport/speak-python-sdk)のサンプルコードです。
-
+トライアル版のチュートリアルは[こちら](https://github.com/docomoDeveloperSupport/speak-python-sample/tree/trial/PythonSDK_Tutorial.pdf)をご覧下さい。
 
 ## 動作条件
 1. Python3
@@ -19,7 +19,7 @@ Please register above ID as your device on User Dashboard. https://users.sebasti
 下記リンク（↓）を使ってブラウザ等でデバイスIDを自分のアカウントに登録して下さい。
 https://users.sebastien.ai/dashboard/device_registration?confirm=yes&device_id=xxxxxxxxxx
 
-Press any key AFTER registration >>> 
+Press any key AFTER registration >>>
 ```
 
 ブラウザでURLにアクセスしてデバイスID登録を完了させて下さい。  
@@ -28,8 +28,8 @@ Press any key AFTER registration >>>
 
 ```
 {
-    "device_token": "xxxxxxx-xxx-xxx-xxxx-xxxxxxxxxxx", 
-    "refresh_token": "ooooooo-ooo-ooo-oooo-ooooooooooo", 
+    "device_token": "xxxxxxx-xxx-xxx-xxxx-xxxxxxxxxxx",
+    "refresh_token": "ooooooo-ooo-ooo-oooo-ooooooooooo",
     "status": "valid"
 }
 SAVE device_token : xxxxxxx-xxx-xxx-xxxx-xxxxxxxxxxx
@@ -53,7 +53,7 @@ TrialApp.pyの以下の行に取得したデバイストークンを記述しま
 TrialApp.pyを実行します。"start"が表示されると対話可能となります。
 
 ```
-$ python3 TrialApp.py 
+$ python3 TrialApp.py
 start
 
 ```
@@ -62,7 +62,7 @@ start
 マイクを使用した音声入力による対話が可能です。NLUから送信されたメタデータは標準出力に表示します。以下の例では「こんにちは」と発話しています。
 
 ```
-$ python3 TrialApp.py 
+$ python3 TrialApp.py
 start
 {"speaker": "satoru", "systemText": {"utterance": "こんにちは。対話開発のトライアルをお楽しみください。", "expression": "こんにちは。対話開発のトライアルをお楽しみください。"}, "version": "sebastien-0.1.0", "type": "nlu_result", "option": {"switchAgent": {"agentType": "1", "agentId": "spftalk"}}}
 ```
@@ -70,7 +70,7 @@ start
 テキスト入力による対話が可能です。以下の例では「しりとりお願い」と入力しています。
 
 ```
-$ python3 TrialApp.py 
+$ python3 TrialApp.py
 start
 しりとりお願い
 {"speaker": "satoru", "systemText": {"utterance": "しりとりに繋ぎます。", "expression": "しりとりに繋ぎます。"}, "version": "sebastien-0.1.0", "type": "nlu_result", "option": {"postback": {"payload": "#PB"}, "switchAgent": {"agentType": "1", "agentId": "spftalk"}}}
@@ -81,9 +81,9 @@ start
 
 | コマンド | 機能 |
 | :----- | :--- |
-| -m | 音声入力をOFFにします。 | 
-| -u | 音声入力をONにします。 | 
-| -q | 対話を終了します。 | 
+| -m | 音声入力をOFFにします。 |
+| -u | 音声入力をONにします。 |
+| -q | 対話を終了します。 |
 
 ## License
 本サンプルコードは以下の修正BSDライセンスが適用されます。
@@ -100,6 +100,3 @@ This product includes cryptographic software written by Eric Young (eay@cryptsof
 
 ## Author
 [NTT DOCOMO, INC.](https://docs.sebastien.ai/)
-
-
-
