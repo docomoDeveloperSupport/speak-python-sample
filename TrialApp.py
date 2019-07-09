@@ -95,11 +95,18 @@ def stop():
     stdin_pipe.close()
     signal_h.close()
 
+def fileread(filename):
+    f = open("./." + filename, "r")
+    output = f.read()
+    print("READ " + filename + " : " + output)
+    f.close()
+    return output
+
 # SDK初期化
 sdk = Speak()
 sdk.init()
 sdk.set_url("wss://spf-v2.sebastien.ai/talk")
-sdk.set_device_token("PUT_YOUR_DEVICE_TOKEN")
+sdk.set_device_token(fileread("trial_device_token"))
 sdk.set_on_play_end(on_play_end)
 sdk.set_on_meta_out(on_meta_out)
 # SDK開始
@@ -118,4 +125,3 @@ signal_h.start(signal_cb, signal.SIGINT)
 # イベントループ開始
 loop.run()
 print ("\nstop")
-
