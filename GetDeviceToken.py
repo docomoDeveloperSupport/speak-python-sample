@@ -89,18 +89,17 @@ if __name__ == '__main__':
 
     if not fileexist("device_token"):
         device_token_json = get_response(uds + "/api/req_device_token?device_id=" + device_id)
-        device_token = json.loads(device_token_json)["device_token"]
-        if device_token == "" or device_token is None:
+        try:
+            device_token = json.loads(device_token_json)["device_token"]
+        except:
             print("Failed to get Device Token. Check User Dashboard to make sure the Device ID is registered properly.")
             print("If the Device ID has been registered, please remove and register the Device ID again on User Dashboard.")
             print("Device Tokenの取得に失敗しました。Device IDがUser Dashboardで正しく登録されているのか確認して下さい。")
-            print("もし登録されている場合は、一度登録済みIDを削除してから再度登録して下さい。")
-            print("Device ID: " + device_id)
+            os.remove("./." + TARGET + "_device_id")
             exit()
-        else:
-            fileoutput("device_token", device_token)
-            refresh_token = json.loads(device_token_json)["refresh_token"]
-            fileoutput("refresh_token", refresh_token)
+        fileoutput("device_token", device_token)
+        refresh_token = json.loads(device_token_json)["refresh_token"]
+        fileoutput("refresh_token", refresh_token)
     else:
         device_token = fileread("device_token")
         refresh_token = fileread("refresh_token")
@@ -119,8 +118,6 @@ if __name__ == '__main__':
                 print("Failed to update Device Token by Refresh Token. Check User Dashboard to make sure the Device ID is registered properly.")
                 print("If the Device ID has been registered, please remove and register the Device ID again on User Dashboard.")
                 print("Device Tokenの更新に失敗しました。Device IDがUser Dashboardで正しく登録されているのか確認して下さい。")
-                print("もし登録されている場合は、一度登録済みIDを削除してから再度登録して下さい。")
-                print("Device ID: " + device_id)
             else:
                 fileoutput("device_token", device_token)
                 refresh_token = json.loads(device_token_json)["refresh_token"]
