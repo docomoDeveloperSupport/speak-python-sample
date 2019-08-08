@@ -3,8 +3,8 @@
 
 
 ## 動作条件
-1. Raspberry Pi 3 Model B (OS: Raspbian 4.14)
-1. Speak SDK(1.6.1以上)
+1. Raspberry Pi 3 Model B (OS: Raspbian 4.19.57)
+1. Speak SDK(1.8.0以上)
 1. Python3
 1. pyuv(pipでインストール)
 
