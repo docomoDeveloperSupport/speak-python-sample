@@ -1,42 +1,30 @@
 # SpeakSDK for Python サンプルアプリケーション
 本ソースコードは株式会社NTTドコモが提供するドコモAIエージェントAPI [SpeakSDK](https://github.com/docomoDeveloperSupport/speak-python-sdk)のサンプルコードです。
-トライアル版のチュートリアルは[こちら](https://github.com/docomoDeveloperSupport/speak-python-sample/tree/trial/PythonSDK_Tutorial.pdf)をご覧下さい。
+
 
 ## 動作条件
+1. Raspberry Pi 3 Model B (OS: Raspbian 4.19.57)
+1. Speak SDK(1.8.0以上)
 1. Python3
-1. Speak SDK(1.3.0以上)
 1. pyuv(pipでインストール)
 
 ## GetDeviceToken.pyの使用
 対話サービスを利用するにはデバイスIDの登録とデバイストークンの取得が必要です。  
-GetDeviceToken.pyを実行すると以下の様にデバイスID登録用のURLを表示して登録の完了を待機します。
-
-```
-$ python3 GetDeviceToken.py
-Success to get Device ID :xxxxxxxxxx
-Please register above ID as your device on User Dashboard. https://users.sebastien.ai
-デバイスIDの取得に成功しました。
-下記リンク（↓）を使ってブラウザ等でデバイスIDを自分のアカウントに登録して下さい。
-https://users.sebastien.ai/dashboard/device_registration?confirm=yes&device_id=xxxxxxxxxx
-
-Press any key AFTER registration >>>
-```
-
-ブラウザでURLにアクセスしてデバイスID登録を完了させて下さい。  
-登録にはGoogleアカウントまたはdアカウントによる認証が必要です。  
-登録が完了したらEnterを入力して下さい。
+スクリプト中における `CLIENT_SECRET` はダミー値であるため、[Agentcraft](http://agentcraft.sebastien.ai/)の設定タグから、ご自身で取得した値に書き換えて実行してください。
+GetDeviceToken.pyを実行すると以下の様にデバイスID・デバイストークン・リフレッシュトークンが標準出力に表示されます。
 
 ```
 {
-    "device_token": "xxxxxxx-xxx-xxx-xxxx-xxxxxxxxxxx",
-    "refresh_token": "ooooooo-ooo-ooo-oooo-ooooooooooo",
-    "status": "valid"
+  "device_id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 }
-SAVE device_token : xxxxxxx-xxx-xxx-xxxx-xxxxxxxxxxx
-SAVE refresh_token : ooooooo-ooo-ooo-oooo-ooooooooooo
+SAVE ./.trial_device_id : xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+{
+  "device_token": "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy",
+  "refresh_token": "oooooooo-oooo-oooo-oooo-oooooooooooo"
+}
+SAVE ./.trial_device_token : yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy
+SAVE ./.trial_refresh_token : oooooooo-oooo-oooo-oooo-oooooooooooo
 ```
-
-GetDeviceToken.pyはデバイストークンとリフレッシュトークンを取得して標準出力に表示します。
 
 > リフレッシュトークンはデバイストークンの更新に使用します。  
 GetDeviceToken.pyは取得したリフレッシュトークンを隠しファイルに保存しています。
@@ -53,7 +41,7 @@ TrialApp.pyの以下の行に取得したデバイストークンを記述しま
 TrialApp.pyを実行します。"start"が表示されると対話可能となります。
 
 ```
-$ python3 TrialApp.py
+$ python3 TrialApp.py 
 start
 
 ```
@@ -62,28 +50,27 @@ start
 マイクを使用した音声入力による対話が可能です。NLUから送信されたメタデータは標準出力に表示します。以下の例では「こんにちは」と発話しています。
 
 ```
-$ python3 TrialApp.py
+$ python3 TrialApp.py 
 start
-{"speaker": "satoru", "systemText": {"utterance": "こんにちは。対話開発のトライアルをお楽しみください。", "expression": "こんにちは。対話開発のトライアルをお楽しみください。"}, "version": "sebastien-0.1.0", "type": "nlu_result", "option": {"switchAgent": {"agentType": "1", "agentId": "spftalk"}}}
+{"systemText": {"utterance": "こんにちは。対話開発のトライアルをお楽しみください。", "expression": "こんにちは。対話開発のトライアルをお楽しみください。"}, "version": "sebastien-1.0.0", "type": "nlu_result", "option": {"switchAgent": {"agentType": "1", "agentId": "21_12_main"}}, "speaker_params": {"style_id": "jpn_JP-N-S0001-T001-E01", "voice_type": 1.0, "pitch": 12, "intonation": 10, "power_rate": 2.0, "speaker_id": "jpn_JP-N-S0001-T001-E01-SR0"}}
 ```
 
-テキスト入力による対話が可能です。以下の例では「しりとりお願い」と入力しています。
+テキスト入力による対話が可能です。以下の例では「こんにちは」と入力しています。
 
 ```
-$ python3 TrialApp.py
+$ python3 TrialApp.py 
 start
-しりとりお願い
-{"speaker": "satoru", "systemText": {"utterance": "しりとりに繋ぎます。", "expression": "しりとりに繋ぎます。"}, "version": "sebastien-0.1.0", "type": "nlu_result", "option": {"postback": {"payload": "#PB"}, "switchAgent": {"agentType": "1", "agentId": "spftalk"}}}
-{"speaker": "rin", "systemText": {"utterance": "前回は29回続いたね。じゃあ、ぼくからいくよ！しりとりの「り」から始めるね。それじゃあ、「領主」。次は、「ユ」から始まる言葉を言ってね。", "expression": "前回は29回続いたね。じゃあ、ぼくからいくよ！しりとりの「り」から始めるね。それじゃあ、「領主」。次は、「ユ」から始まる言葉を言ってね。"}, "version": "sebastien-0.1.0", "type": "nlu_result", "option": {"switchAgent": {"agentType": "2", "agentId": "Shiritori"}}}
+こんにちは
+{"systemText": {"utterance": "こんにちは。対話開発のトライアルをお楽しみください。", "expression": "こんにちは。対話開発のトライアルをお楽しみください。"}, "version": "sebastien-1.0.0", "type": "nlu_result", "option": {"switchAgent": {"agentType": "1", "agentId": "21_12_main"}}, "speaker_params": {"style_id": "jpn_JP-N-S0001-T001-E01", "voice_type": 1.0, "pitch": 12, "intonation": 10, "power_rate": 2.0, "speaker_id": "jpn_JP-N-S0001-T001-E01-SR0"}}
 ```
 
 対話中は以下のコマンドが使用可能です。
 
 | コマンド | 機能 |
 | :----- | :--- |
-| -m | 音声入力をOFFにします。 |
-| -u | 音声入力をONにします。 |
-| -q | 対話を終了します。 |
+| -m | 音声入力をOFFにします。 | 
+| -u | 音声入力をONにします。 | 
+| -q | 対話を終了します。 | 
 
 ## License
 本サンプルコードは以下の修正BSDライセンスが適用されます。
@@ -100,3 +87,6 @@ This product includes cryptographic software written by Eric Young (eay@cryptsof
 
 ## Author
 [NTT DOCOMO, INC.](https://docs.sebastien.ai/)
+
+
+
